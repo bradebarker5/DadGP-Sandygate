@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dad Karting League Prototype</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #050505;
+      --cp-bg-elevated: #10121a;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f3f4f7;
+      --cp-border: #d7d9e2;
+      --cp-border-strong: #3a4056;
+      --cp-text: #262b3f;
+      --cp-text-muted: #565d74;
+      --cp-text-soft: #6c7287;
+      --cp-accent: #ee393d;
+      --cp-accent-hover: #d62d31;
+      --cp-accent-soft: rgba(238, 57, 61, 0.12);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #ee393d;
+      --cp-warning: #ffc000;
+      --cp-link: #262b3f;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+      --cp-logo-panel: #ffffff;
+      --cp-logo-text: #262b3f;
+      --cp-logo-muted: #565d74;
+      --cp-fastest-lap: #7c3aed;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #050505;
+      --cp-bg-elevated: #10121a;
+      --cp-surface: #161a27;
+      --cp-surface-soft: #202536;
+      --cp-border: #353b50;
+      --cp-border-strong: #f3f4f7;
+      --cp-text: #f8f8f8;
+      --cp-text-muted: #c6cad6;
+      --cp-text-soft: #a5abbb;
+      --cp-accent: #ee393d;
+      --cp-accent-hover: #ff4a4e;
+      --cp-accent-soft: rgba(238, 57, 61, 0.18);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #4ade80;
+      --cp-danger: #ff4a4e;
+      --cp-warning: #ffc000;
+      --cp-link: #ffffff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+      --cp-logo-panel: #ffffff;
+      --cp-logo-text: #262b3f;
+      --cp-logo-muted: #565d74;
+      --cp-fastest-lap: #c084fc;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--cp-bg);
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
+    button, input, textarea, select {
+      font: inherit;
+    }
+    button {
+      border: 1px solid var(--cp-border);
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      border-radius: 0.625rem;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--cp-border-strong); }
+    button.primary {
+      background: var(--cp-accent);
+      border-color: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      font-weight: 700;
+    }
+    button.primary:hover {
+      background: var(--cp-accent-hover);
+      border-color: var(--cp-accent-hover);
+    }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      padding: 10px 12px;
+    }
+    textarea { min-height: 72px; resize: vertical; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--cp-border);
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .app {
+      width: min(980px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 18px 0 32px;
+    }
+    .hero {
+      margin-bottom: 10px;
+    }
+    .panel, .card, .hero-card {
+      background: var(--cp-panel-strong);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+    }
+    .hero-card {
+      background: var(--cp-logo-panel);
+      color: var(--cp-logo-text);
+      padding: 8px 12px 12px;
+      text-align: center;
+    }
+    .hero-card::after { display: none; }
+    .logo {
+      display: block;
+      width: min(180px, 52vw);
+      margin: 0 auto 2px;
+      border-radius: 0.625rem;
+    }
+    .eyebrow {
+      color: var(--cp-accent);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 13px;
+    }
+    h2 { margin: 0 0 14px; font-size: 24px; }
+    h3 { margin: 0 0 8px; font-size: 18px; }
+    p { color: var(--cp-text-muted); line-height: 1.55; }
+    .intro-copy {
+      color: var(--cp-logo-muted);
+      font-size: 13px;
+      margin: 4px 0 10px;
+    }
+    .hero-actions button {
+      background: var(--cp-surface-soft);
+      border-color: var(--cp-border);
+      color: var(--cp-logo-text);
+      padding: 8px 11px;
+      font-size: 13px;
+    }
+    .hero-actions button:hover {
+      background: var(--cp-border);
+      border-color: var(--cp-border-strong);
+      color: var(--cp-logo-text);
+    }
+    .hero-actions button.primary {
+      background: var(--cp-accent);
+      border-color: var(--cp-accent);
+      color: var(--cp-accent-fg);
+    }
+    .hero-actions button.primary:hover {
+      background: var(--cp-accent-hover);
+      border-color: var(--cp-accent-hover);
+      color: var(--cp-accent-fg);
+    }
+    .hero-actions, .toolbar, .pill-row, .bottom-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .stat {
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .stat .value { font-size: 30px; font-weight: 800; }
+    .stat .label { color: var(--cp-text-muted); font-size: 13px; }
+    .hof-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .award {
+      padding: 5px 9px;
+      min-height: 0;
+    }
+    .award-title {
+      color: var(--cp-accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .award-value {
+      margin: 4px 0 2px;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .award p {
+      margin: 4px 0 0;
+    }
+    .driver-link {
+      border: 0;
+      background: transparent;
+      color: var(--cp-text);
+      padding: 0;
+      font-weight: 700;
+      text-align: left;
+    }
+    .driver-link:hover {
+      color: var(--cp-accent);
+      text-decoration: underline;
+    }
+    .view { display: none; }
+    .view.active { display: block; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+    .panel {
+      padding: 16px;
+      overflow-x: auto;
+    }
+    .card {
+      padding: 16px;
+      background: var(--cp-surface);
+    }
+    .driver-card {
+      display: grid;
+      grid-template-columns: 74px 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+    .driver-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .driver-pick {
+      width: 100%;
+      min-height: 50px;
+      text-align: left;
+      padding: 6px 7px;
+      font-size: 13px;
+      line-height: 1.15;
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+    }
+    .driver-pick.primary {
+      background: var(--cp-accent);
+      border-color: var(--cp-accent);
+      color: var(--cp-accent-fg);
+    }
+    .driver-pick .driver-link {
+      font-size: 13px;
+      line-height: 1.2;
+    }
+    .driver-pick .driver-name {
+      color: inherit;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .driver-pick .nickname {
+      font-size: 12px;
+    }
+    .driver-pick.primary .driver-link {
+      color: var(--cp-accent-fg);
+    }
+    .driver-bio {
+      font-size: 13px;
+    }
+    .driver-detail-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 8px 0;
+    }
+    .driver-detail-stats .stat {
+      padding: 9px;
+      border-radius: 12px;
+    }
+    .driver-detail-stats .value {
+      color: var(--cp-accent);
+      font-size: 22px;
+      line-height: 1;
+    }
+    .driver-detail-stats .label {
+      font-size: 11px;
+      margin-top: 3px;
+    }
+    .driver-race-history {
+      font-size: 11px;
+    }
+    .race-title {
+      font-size: 13px;
+    }
+    .race-meta {
+      font-size: 10px;
+    }
+    .avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      border: 1px solid var(--cp-border);
+      background: var(--cp-accent-soft);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: var(--cp-accent);
+      font-weight: 900;
+      font-size: 22px;
+    }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .muted { color: var(--cp-text-muted); }
+    .small { font-size: 13px; }
+    .nickname {
+      color: var(--cp-text-muted);
+      font-style: italic;
+      font-weight: 400;
+    }
+    .pill .nickname {
+      color: var(--cp-text-soft);
+      font-weight: 400;
+    }
+    .driver-pick.primary .nickname {
+      color: var(--cp-surface-soft);
+      font-weight: 400;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--cp-border);
+      background: var(--cp-surface-soft);
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .pill.good { color: var(--cp-success); }
+    .pill.warn { color: var(--cp-warning); }
+    .pill.bad { color: var(--cp-danger); }
+    .pill.fastest {
+      color: var(--cp-fastest-lap);
+      border-color: var(--cp-fastest-lap);
+    }
+    .fastest-lap {
+      color: var(--cp-fastest-lap);
+      font-weight: 400;
+    }
+    .rank {
+      display: inline-grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 0.625rem;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      font-weight: 900;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .form-grid .full { grid-column: 1 / -1; }
+    .dropzone {
+      border: 1px dashed var(--cp-border-strong);
+      background: var(--cp-surface-soft);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    .sample {
+      font-family: Consolas, "Courier New", Courier, monospace;
+      white-space: pre-wrap;
+      background: var(--cp-surface-soft);
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      padding: 12px;
+      color: var(--cp-text-muted);
+      font-size: 12px;
+    }
+    .bar {
+      height: 10px;
+      background: var(--cp-surface-soft);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--cp-border);
+    }
+    .bar span {
+      display: block;
+      height: 100%;
+      background: var(--cp-accent);
+      border-radius: inherit;
+    }
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 20;
+      background: var(--cp-panel-strong);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: var(--cp-shadow);
+      padding: 12px 14px;
+      display: none;
+      max-width: 320px;
+    }
+    .toast.show { display: block; }
+    .empty {
+      padding: 28px;
+      text-align: center;
+      border: 1px dashed var(--cp-border);
+      border-radius: 16px;
+      color: var(--cp-text-muted);
+      background: var(--cp-surface-soft);
+    }
+    .bottom-actions {
+      justify-content: center;
+      margin-top: 18px;
+      padding: 18px 0 0;
+    }
+    .text-link {
+      border: 0;
+      background: transparent;
+      color: var(--cp-accent);
+      text-decoration: underline;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: 400;
+    }
+    .separator {
+      color: var(--cp-text-muted);
+      font-weight: 700;
+    }
+    @media (max-width: 880px) {
+      .hero, .grid, .form-grid { grid-template-columns: 1fr; }
+      .span-4, .span-5, .span-6, .span-7, .span-8, .span-12 { grid-column: auto; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      th:nth-child(5), td:nth-child(5), th:nth-child(6), td:nth-child(6) { display: none; }
+    }
+    @media (max-width: 560px) {
+      .app { width: min(100% - 16px, 980px); padding-top: 8px; }
+      .hero-card, .panel, .card { border-radius: 12px; }
+      .hero-card { padding: 6px 10px 10px; }
+      .hero-actions { justify-content: center; }
+      .hero-actions button { flex: 1 1 118px; padding: 7px 9px; font-size: 12px; }
+      th, td { padding: 10px 8px; }
+      .driver-card { grid-template-columns: 54px 1fr; gap: 10px; }
+      .avatar { width: 48px; height: 48px; border-radius: 12px; font-size: 17px; }
+      .stat-grid { grid-template-columns: 1fr; }
+      .driver-detail-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hof-grid { grid-template-columns: 1fr; }
+      th:nth-child(4), td:nth-child(4), th:nth-child(7), td:nth-child(7) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="hero-card">
+        <img class="logo" src="dad-gp-logo.png" alt="Sandygate 'Dad GP' Invitational logo">
+        <div class="eyebrow">Sandygate 'Dad GP' Invitational</div>
+        <p class="intro-copy">Every race tracked, every driver profiled, and every result published for future pub-based litigation</p>
+        <div class="hero-actions">
+          <button class="primary" data-jump="standings">League table</button>
+          <button data-jump="races">Past races</button>
+          <button data-jump="drivers">Driver profiles</button>
+          <button data-jump="hallOfFame">Hall of Fame</button>
+          <button data-jump="rules">Scoring Guide</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="view active" id="standings">
+      <div class="panel">
+        <div class="toolbar" style="justify-content: space-between;">
+          <div>
+            <h2>League table</h2>
+            <p class="small">Calculated from every uploaded race using the active points rules.</p>
+          </div>
+        </div>
+        <div id="standingsTable"></div>
+      </div>
+    </section>
+
+    <section class="view" id="races">
+      <div class="grid">
+        <div class="panel span-4">
+          <h2>Past races</h2>
+          <div id="raceList"></div>
+        </div>
+        <div class="panel span-8">
+          <div class="toolbar" style="justify-content: space-between;">
+            <div>
+              <h2 id="selectedRaceTitle">Race results</h2>
+              <p class="small" id="selectedRaceSummary"></p>
+            </div>
+            <button id="simulateRace">Simulate new race</button>
+          </div>
+          <div id="selectedRaceTable"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="drivers">
+      <div class="grid">
+        <div class="panel span-4">
+          <h2>Driver profiles</h2>
+          <div id="driverPicker"></div>
+        </div>
+        <div class="panel span-8">
+          <div id="driverDetail"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="hallOfFame">
+      <div class="panel">
+        <h2>Hall of Fame</h2>
+        <div class="hof-grid" id="hallOfFameGrid"></div>
+      </div>
+    </section>
+
+    <section class="view" id="upload">
+      <div class="grid">
+        <div class="panel span-5">
+          <h2>Upload race data</h2>
+          <p class="small">Paste CSV from the track or import a CSV file. Expected columns: driver, position, bestLap, totalTime. Optional: startPosition or qualifyingPosition for mover/bottler awards.</p>
+          <div class="form-grid">
+            <label>Race name<input id="raceName" value="Round 4 - Monday Mayhem"></label>
+            <label>Track<select id="raceTrack"></select></label>
+            <label class="full">Race date<input id="raceDate" type="date"></label>
+            <label class="full">CSV data<textarea id="raceCsv"></textarea></label>
+            <div class="full dropzone">
+              <input id="csvFile" type="file" accept=".csv,text/csv">
+              <p class="small">File upload reads locally in your browser. No server, no telemetry, no marshal judging your apex.</p>
+            </div>
+            <button class="primary full" id="importRace">Import race and recalculate standings</button>
+          </div>
+        </div>
+        <div class="panel span-7">
+          <h2>Sample track export</h2>
+          <div class="sample" id="sampleCsv"></div>
+          <h2 style="margin-top: 20px;">Import preview</h2>
+          <div id="importPreview"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="profiles">
+      <div class="grid">
+        <div class="panel span-5">
+          <h2>Create or edit dad profile</h2>
+          <div class="form-grid">
+            <label>Driver name<input id="profileName" placeholder="John Smith"></label>
+            <label>Nickname<input id="profileNick" placeholder="e.g. Late Apex"></label>
+            <label class="full">Bio<textarea id="profileBio" class="bio-textbox" placeholder="Braking too early since 2009. Claims the kart was down on power."></textarea></label>
+            <label class="full">Headshot<input id="profilePhoto" type="file" accept="image/*"></label>
+            <button class="primary full" id="saveProfile">Save profile</button>
+          </div>
+        </div>
+        <div class="panel span-7">
+          <h2>Profile wall</h2>
+          <div class="grid" id="profileWall"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="rules">
+      <div class="panel">
+        <h2>Scoring Guide</h2>
+        <div class="card" style="margin-bottom: 14px;">
+          <h3>Scoring</h3>
+          <p class="small">P1 to P10 score fixed placement points. Fastest lap earns a bonus. Pole earns a bonus. The table updates whenever a race is uploaded.</p>
+        </div>
+        <h2>Points table</h2>
+        <div id="rulePreview"></div>
+      </div>
+    </section>
+
+    <div class="bottom-actions">
+      <button class="text-link" data-jump="upload">Upload race</button>
+      <span class="separator">|</span>
+      <button class="text-link" data-jump="profiles">Create Dad Profile</button>
+    </div>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const state = {
+      selectedRaceId: "r3",
+      selectedDriverId: "d1",
+      headshotDraft: "",
+      tracks: ["TeamSport Docklands", "Buckmore Park", "Daytona Milton Keynes", "Rye House"],
+      points: {
+        placement: [25, 18, 15, 12, 10, 8, 6, 4, 2, 1],
+        fastestLap: 2,
+        pole: 1,
+      },
+      drivers: [
+        { id: "d1", name: "Brian Barker", nick: "Late Apex", number: 44, bio: "Treats every braking zone as a negotiation. Blames cold tyres with legal precision.", photo: "" },
+        { id: "d2", name: "Raj Patel", nick: "The Spreadsheet", number: 7, bio: "Arrives with tyre temperature theories and leaves with fastest sector excuses.", photo: "" },
+        { id: "d3", name: "Tom Hughes", nick: "Kerb Goblin", number: 13, bio: "Finds track limits by exceeding them. Often.", photo: "" },
+        { id: "d4", name: "Mark Evans", nick: "Captain Caution", number: 22, bio: "Defensive driving instructor energy. Very hard to pass, emotionally and physically.", photo: "" },
+        { id: "d5", name: "Sam Clarke", nick: "No Lift", number: 5, bio: "Throttle pedal apparently has two settings: full and pretending.", photo: "" },
+        { id: "d6", name: "Neil Foster", nick: "The Marshal Whisperer", number: 31, bio: "Has never met a warning flag he did not want to debate.", photo: "" }
+      ],
+      races: [
+        {
+          id: "r1",
+          name: "Round 1 - Winter Warm-Up",
+          track: "TeamSport Docklands",
+          date: "2026-02-09",
+          poleDriverId: "d2",
+          results: [
+            { driverId: "d2", position: 1, bestLap: "42.814", totalTime: "12:06.441" },
+            { driverId: "d1", position: 2, bestLap: "43.108", totalTime: "12:08.113" },
+            { driverId: "d5", position: 3, bestLap: "43.002", totalTime: "12:08.982" },
+            { driverId: "d3", position: 4, bestLap: "43.660", totalTime: "12:15.440" },
+            { driverId: "d4", position: 5, bestLap: "44.022", totalTime: "12:20.009" },
+            { driverId: "d6", position: 6, bestLap: "44.166", totalTime: "12:22.804" }
+          ]
+        },
+        {
+          id: "r2",
+          name: "Round 2 - Brake Bias Banter",
+          track: "Buckmore Park",
+          date: "2026-03-16",
+          poleDriverId: "d1",
+          results: [
+            { driverId: "d1", position: 1, bestLap: "53.992", totalTime: "15:14.700" },
+            { driverId: "d5", position: 2, bestLap: "54.004", totalTime: "15:16.022" },
+            { driverId: "d2", position: 3, bestLap: "54.330", totalTime: "15:20.228" },
+            { driverId: "d6", position: 4, bestLap: "54.560", totalTime: "15:26.110" },
+            { driverId: "d3", position: 5, bestLap: "54.222", totalTime: "15:27.006" },
+            { driverId: "d4", position: 6, bestLap: "55.010", totalTime: "15:34.771" }
+          ]
+        },
+        {
+          id: "r3",
+          name: "Round 3 - School Night Sprint",
+          track: "Daytona Milton Keynes",
+          date: "2026-04-20",
+          poleDriverId: "d5",
+          results: [
+            { driverId: "d5", position: 1, bestLap: "49.766", totalTime: "14:40.901" },
+            { driverId: "d2", position: 2, bestLap: "49.910", totalTime: "14:42.081" },
+            { driverId: "d1", position: 3, bestLap: "49.702", totalTime: "14:43.300" },
+            { driverId: "d6", position: 4, bestLap: "50.112", totalTime: "14:48.930" },
+            { driverId: "d4", position: 5, bestLap: "50.388", totalTime: "14:54.014" },
+            { driverId: "d3", position: 6, bestLap: "50.044", totalTime: "14:55.668" }
+          ]
+        }
+      ]
+    };
+
+    const sampleCsv = `driver,position,bestLap,totalTime
+Brian Barker,1,48.955,14:29.100
+Raj Patel,2,49.120,14:32.820
+Sam Clarke,3,48.902,14:33.004
+Tom Hughes,4,49.554,14:41.660
+Mark Evans,5,49.800,14:43.912
+Neil Foster,6,50.010,14:49.500`;
+
+    const byId = (items, id) => items.find(item => item.id === id);
+    const formatDate = value => new Date(`${value}T12:00:00`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    const driverInitials = driver => driver.name.split(" ").map(part => part[0]).join("").slice(0, 2).toUpperCase();
+    const bestLapValue = result => Number.parseFloat(result.bestLap);
+    const getDriver = id => byId(state.drivers, id) || { name: "Unknown driver", nick: "Mystery kart", number: 0, bio: "", photo: "" };
+    const ordinal = value => {
+      const number = Number.parseInt(value, 10);
+      if (!Number.isFinite(number)) return value;
+      const teens = number % 100;
+      if (teens >= 11 && teens <= 13) return `${number}th`;
+      const suffix = number % 10 === 1 ? "st" : number % 10 === 2 ? "nd" : number % 10 === 3 ? "rd" : "th";
+      return `${number}${suffix}`;
+    };
+    const nickname = driver => `<em class="nickname">"${driver.nick}"</em>`;
+    const driverProfileLink = driver => `<button class="driver-link" data-profile-driver="${driver.id}">${driver.name}</button>`;
+    const raceSummaryLink = race => `<button class="driver-link" data-summary-race="${race.id}">${race.name}</button>`;
+    const showToast = message => {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.setTimeout(() => toast.classList.remove("show"), 2800);
+    };
+
+    function avatar(driver) {
+      return `<div class="avatar">${driver.photo ? `<img alt="${driver.name}" src="${driver.photo}">` : driverInitials(driver)}</div>`;
+    }
+
+    function racePoints(race) {
+      const fastest = race.results.reduce((best, result) => bestLapValue(result) < bestLapValue(best) ? result : best, race.results[0]);
+      return race.results.map(result => {
+        const placement = state.points.placement[result.position - 1] || 0;
+        const fastestLap = result.driverId === fastest.driverId ? state.points.fastestLap : 0;
+        const pole = result.driverId === race.poleDriverId ? state.points.pole : 0;
+        return { ...result, placementPoints: placement, fastestLapPoints: fastestLap, polePoints: pole, points: placement + fastestLap + pole };
+      });
+    }
+
+    function standings() {
+      return state.drivers.map(driver => {
+        const driverResults = state.races.flatMap(race => racePoints(race).filter(result => result.driverId === driver.id).map(result => ({ ...result, race })));
+        const wins = driverResults.filter(result => result.position === 1).length;
+        const podiums = driverResults.filter(result => result.position <= 3).length;
+        const points = driverResults.reduce((sum, result) => sum + result.points, 0);
+        const avgPosition = driverResults.length ? driverResults.reduce((sum, result) => sum + result.position, 0) / driverResults.length : 0;
+        const fastestLaps = driverResults.filter(result => result.fastestLapPoints > 0).length;
+        return { driver, races: driverResults.length, wins, podiums, points, avgPosition, fastestLaps, results: driverResults };
+      }).sort((a, b) => b.points - a.points || b.wins - a.wins || a.avgPosition - b.avgPosition);
+    }
+
+    function topBy(rows, metric, direction = "desc") {
+      const ranked = rows.filter(row => Number.isFinite(row[metric])).sort((a, b) => direction === "asc" ? a[metric] - b[metric] : b[metric] - a[metric]);
+      return ranked[0] || null;
+    }
+
+    function hallOfFameAwards() {
+      const table = standings();
+      const rows = table.map(row => {
+        const lastThree = row.results.slice(-3);
+        const lastPlaces = row.results.filter(result => result.position === Math.max(...result.race.results.map(raceResult => raceResult.position))).length;
+        const middleFinishes = row.results.filter(result => {
+          const fieldSize = result.race.results.length;
+          const lowMiddle = Math.ceil(fieldSize / 2);
+          const highMiddle = fieldSize % 2 === 0 ? lowMiddle + 1 : lowMiddle;
+          return result.position >= lowMiddle && result.position <= highMiddle;
+        }).length;
+        const moves = row.results
+          .map(result => {
+            const start = Number.parseInt(result.startPosition || result.qualifyingPosition, 10);
+            return Number.isFinite(start) ? start - result.position : null;
+          })
+          .filter(value => value !== null);
+        return {
+          ...row,
+          lastThreeAverage: lastThree.length ? lastThree.reduce((sum, result) => sum + result.position, 0) / lastThree.length : Number.POSITIVE_INFINITY,
+          lastPlaces,
+          middleFinishes,
+          biggestGain: moves.length ? Math.max(...moves) : Number.NaN,
+          biggestLoss: moves.length ? Math.min(...moves) : Number.NaN
+        };
+      });
+      const purpleSectorMerchant = rows
+        .filter(row => row.fastestLaps > 0)
+        .sort((a, b) => b.fastestLaps - a.fastestLaps || a.wins - b.wins)[0] || null;
+      const awards = [
+        { title: "Most Wins", winner: topBy(rows, "wins"), metric: row => `${row.wins} win${row.wins === 1 ? "" : "s"}`, note: "Simple, credible bragging stat" },
+        { title: "Most Podiums", winner: topBy(rows, "podiums"), metric: row => `${row.podiums} podium${row.podiums === 1 ? "" : "s"}`, note: "Rewarding most top-3 finishes" },
+        { title: "Most Fastest Laps", winner: topBy(rows, "fastestLaps"), metric: row => `${row.fastestLaps} fastest lap${row.fastestLaps === 1 ? "" : "s"}`, note: "All gas, no brakes" },
+        { title: "Wooden Spoon", winner: topBy(rows, "lastPlaces"), metric: row => `${row.lastPlaces} last-place finish${row.lastPlaces === 1 ? "" : "es"}`, note: "Brutal, but necessary" },
+        { title: "Mr Middlefield", winner: topBy(rows, "middleFinishes"), metric: row => `${row.middleFinishes} middle-place finish${row.middleFinishes === 1 ? "" : "es"}`, note: "Neither a threat nor traffic" },
+        { title: "Purple Sector Merchant", winner: purpleSectorMerchant, metric: row => `${row.fastestLaps} fastest lap${row.fastestLaps === 1 ? "" : "s"} / ${row.wins} win${row.wins === 1 ? "" : "s"}`, note: "Fastest laps without wins" },
+        { title: "Mr Consistency", winner: topBy(rows, "lastThreeAverage", "asc"), metric: row => `${row.lastThreeAverage.toFixed(1)} avg finish`, note: "Turns up, finishes well, mentions it often" }
+      ];
+      const mover = topBy(rows, "biggestGain");
+      const bottler = topBy(rows, "biggestLoss", "asc");
+      if (mover && mover.biggestGain > 0) {
+        awards.push({ title: "Biggest Mover", winner: mover, metric: row => `+${row.biggestGain} places`, note: "Compares start position against finishing position." });
+      }
+      if (bottler && bottler.biggestLoss < 0) {
+        awards.push({ title: "Biggest Bottler", winner: bottler, metric: row => `${Math.abs(row.biggestLoss)} places lost`, note: "Flags the biggest drop from start position to finish." });
+      }
+      return awards.filter(award => award.winner && Number.isFinite(Number.parseFloat(award.metric(award.winner))));
+    }
+
+    function renderTable(headers, rows) {
+      return `<table><thead><tr>${headers.map(header => `<th>${header}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table>`;
+    }
+
+    function renderStandings() {
+      const maxPoints = Math.max(...standings().map(row => row.points), 1);
+      const rows = standings().map((row, index) => `
+        <tr>
+          <td><span class="rank">${index + 1}</span></td>
+          <td>
+            <div class="driver-card">
+              ${avatar(row.driver)}
+              <div>${driverProfileLink(row.driver)}<div class="small">${nickname(row.driver)}</div></div>
+            </div>
+          </td>
+          <td><strong>${row.points}</strong></td>
+          <td>${row.wins}</td>
+          <td>${row.podiums}</td>
+          <td>${row.races ? row.avgPosition.toFixed(1) : "-"}</td>
+          <td><div class="bar"><span style="width: ${(row.points / maxPoints) * 100}%"></span></div></td>
+        </tr>
+      `);
+      document.getElementById("standingsTable").innerHTML = renderTable(["Rank", "Driver", "Pts", "Wins", "Podiums", "Avg pos", "Pace"], rows);
+    }
+
+    function renderRaceResultsTable(race) {
+      const fastest = race.results.reduce((best, result) => bestLapValue(result) < bestLapValue(best) ? result : best, race.results[0]);
+      const rows = racePoints(race).sort((a, b) => a.position - b.position).map(result => {
+        const driver = getDriver(result.driverId);
+        return `<tr>
+          <td><span class="rank">${result.position}</span></td>
+          <td>${driverProfileLink(driver)}<div class="small">${nickname(driver)}</div></td>
+          <td class="${result.driverId === fastest.driverId ? "fastest-lap" : ""}">${result.bestLap}s ${result.driverId === fastest.driverId ? `<span class="pill fastest">Fastest</span>` : ""}</td>
+          <td>${result.totalTime}</td>
+          <td>${result.driverId === race.poleDriverId ? `<span class="pill warn">Pole</span>` : `<span class="pill">Grid</span>`}</td>
+          <td><strong>${result.points}</strong></td>
+        </tr>`;
+      });
+      return renderTable(["Pos", "Driver", "Best lap", "Total", "Bonus", "Pts"], rows);
+    }
+
+    function renderRaceArchive() {
+      const racesNewestFirst = [...state.races].sort((a, b) => b.date.localeCompare(a.date));
+      document.getElementById("raceList").innerHTML = racesNewestFirst.map(race => `
+        <button style="width: 100%; text-align: left; margin-bottom: 10px;" data-race="${race.id}" class="${race.id === state.selectedRaceId ? "primary" : ""}">
+          <strong class="race-title">${race.name}</strong><br><span class="race-meta">${race.track} - ${formatDate(race.date)}</span>
+        </button>
+      `).join("");
+      const selected = byId(state.races, state.selectedRaceId) || state.races[state.races.length - 1];
+      document.getElementById("selectedRaceTitle").textContent = selected.name;
+      document.getElementById("selectedRaceSummary").textContent = `${selected.track} - ${formatDate(selected.date)} - ${selected.results.length} drivers`;
+      document.getElementById("selectedRaceTable").innerHTML = renderRaceResultsTable(selected);
+      document.querySelectorAll("[data-race]").forEach(button => {
+        button.addEventListener("click", () => {
+          state.selectedRaceId = button.dataset.race;
+          renderAll();
+        });
+      });
+    }
+
+    function renderDrivers() {
+      const ranked = standings();
+      document.getElementById("driverPicker").innerHTML = `<div class="driver-picker-grid">${ranked.map(row => `
+        <button data-profile-driver="${row.driver.id}" class="driver-pick ${row.driver.id === state.selectedDriverId ? "primary" : ""}">
+          <span class="driver-name">${row.driver.name}</span><br><span class="small">${nickname(row.driver)}</span>
+        </button>
+      `).join("")}</div>`;
+      const row = ranked.find(item => item.driver.id === state.selectedDriverId) || ranked[0];
+      const bestFinish = row.results.length ? Math.min(...row.results.map(result => result.position)) : "-";
+      const bestLap = row.results.length ? row.results.map(result => result.bestLap).sort((a, b) => Number.parseFloat(a) - Number.parseFloat(b))[0] : "-";
+      document.getElementById("driverDetail").innerHTML = `
+        <div class="driver-card" style="grid-template-columns: 96px 1fr;">
+          <div class="avatar" style="width: 86px; height: 86px; font-size: 28px;">${row.driver.photo ? `<img alt="${row.driver.name}" src="${row.driver.photo}">` : driverInitials(row.driver)}</div>
+          <div>
+            <h2>${driverProfileLink(row.driver)}</h2>
+            <div class="pill-row">
+              <span class="pill">${nickname(row.driver)}</span>
+            </div>
+          </div>
+        </div>
+        <p class="driver-bio">${row.driver.bio}</p>
+        <div class="stat-grid driver-detail-stats">
+          <div class="stat"><div class="value">${row.wins}</div><div class="label">Wins</div></div>
+          <div class="stat"><div class="value">${row.podiums}</div><div class="label">Podiums</div></div>
+          <div class="stat"><div class="value">${ordinal(bestFinish)}</div><div class="label">Best finish</div></div>
+          <div class="stat"><div class="value">${bestLap}s</div><div class="label">Best lap</div></div>
+        </div>
+        <div class="driver-race-history">${renderTable(["Race", "Pos", "Best lap", "Total"], row.results.map(result => `
+          <tr><td>${raceSummaryLink(result.race)}</td><td>${result.position}</td><td class="${result.fastestLapPoints > 0 ? "fastest-lap" : ""}">${result.bestLap}s</td><td>${result.totalTime}</td></tr>
+        `))}</div>
+      `;
+    }
+
+    function renderHallOfFame() {
+      document.getElementById("hallOfFameGrid").innerHTML = hallOfFameAwards().map(award => `
+        <div class="card award">
+          <div class="award-title">${award.title}</div>
+          <div class="award-value">${driverProfileLink(award.winner.driver)}</div>
+          <div class="small">${nickname(award.winner.driver)}</div>
+          <p class="small"><strong>${award.metric(award.winner)}</strong> - ${award.note}</p>
+        </div>
+      `).join("");
+    }
+
+    function renderUpload() {
+      document.getElementById("sampleCsv").textContent = sampleCsv;
+      if (!document.getElementById("raceCsv").value.trim()) document.getElementById("raceCsv").value = sampleCsv;
+      if (!document.getElementById("raceDate").value) document.getElementById("raceDate").value = new Date().toISOString().slice(0, 10);
+      document.getElementById("raceTrack").innerHTML = state.tracks.map(track => `<option>${track}</option>`).join("");
+      previewImport();
+    }
+
+    function parseCsv(text) {
+      const lines = text.trim().split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) return [];
+      const headers = lines[0].split(",").map(header => header.trim().toLowerCase());
+      return lines.slice(1).map(line => {
+        const values = line.split(",").map(value => value.trim());
+        const row = {};
+        headers.forEach((header, index) => row[header] = values[index] || "");
+        return row;
+      });
+    }
+
+    function previewImport() {
+      const rows = parseCsv(document.getElementById("raceCsv").value);
+      if (!rows.length) {
+        document.getElementById("importPreview").innerHTML = `<div class="empty">Paste CSV to preview the import.</div>`;
+        return;
+      }
+      document.getElementById("importPreview").innerHTML = renderTable(["Driver", "Pos", "Best lap", "Total"], rows.map(row => `
+        <tr><td>${row.driver || row.name || "Unknown"}</td><td>${row.position || "-"}</td><td>${row.bestlap || "-"}</td><td>${row.totaltime || "-"}</td></tr>
+      `));
+    }
+
+    function importRace() {
+      const rows = parseCsv(document.getElementById("raceCsv").value);
+      if (!rows.length) {
+        showToast("No race rows found. Even karts need data.");
+        return;
+      }
+      const results = rows.map(row => {
+        const name = row.driver || row.name || "Unknown Dad";
+        let driver = state.drivers.find(item => item.name.toLowerCase() === name.toLowerCase());
+        if (!driver) {
+          driver = { id: `d${Date.now()}${state.drivers.length}`, name, nick: "Rookie Dad", number: state.drivers.length + 1, bio: "Imported from race data. Bio pending; excuses already available.", photo: "" };
+          state.drivers.push(driver);
+        }
+        return {
+          driverId: driver.id,
+          position: Number.parseInt(row.position, 10) || 99,
+          bestLap: row.bestlap || row.bestLap || "99.999",
+          totalTime: row.totaltime || row.totalTime || "-",
+          startPosition: row.startposition || row.qualifyingposition || row.grid || ""
+        };
+      }).sort((a, b) => a.position - b.position);
+      const fastest = results.reduce((best, result) => bestLapValue(result) < bestLapValue(best) ? result : best, results[0]);
+      const race = {
+        id: `r${Date.now()}`,
+        name: document.getElementById("raceName").value || `Round ${state.races.length + 1}`,
+        track: document.getElementById("raceTrack").value,
+        date: document.getElementById("raceDate").value,
+        poleDriverId: fastest.driverId,
+        results
+      };
+      state.races.push(race);
+      state.selectedRaceId = race.id;
+      showToast("Race imported. Standings recalculated. Egos destabilized.");
+      setTab("standings");
+      renderAll();
+    }
+
+    function renderProfiles() {
+      document.getElementById("profileWall").innerHTML = state.drivers.map(driver => `
+        <div class="card span-6">
+          <div class="driver-card">
+            ${avatar(driver)}
+            <div>
+              ${driverProfileLink(driver)}
+              <div class="small">${nickname(driver)}</div>
+            </div>
+          </div>
+          <p class="driver-bio">${driver.bio}</p>
+        </div>
+      `).join("");
+    }
+
+    function saveProfile() {
+      const name = document.getElementById("profileName").value.trim();
+      if (!name) {
+        showToast("Driver name required. Anonymous dads are a compliance risk.");
+        return;
+      }
+      const existing = state.drivers.find(driver => driver.name.toLowerCase() === name.toLowerCase());
+      const payload = {
+        id: existing ? existing.id : `d${Date.now()}`,
+        name,
+        nick: document.getElementById("profileNick").value.trim() || "Unnamed menace",
+        number: existing ? existing.number : state.drivers.length + 1,
+        bio: document.getElementById("profileBio").value.trim() || "Bio pending. Sandbagging confirmed.",
+        photo: state.headshotDraft || (existing ? existing.photo : "")
+      };
+      if (existing) Object.assign(existing, payload);
+      else state.drivers.push(payload);
+      state.selectedDriverId = payload.id;
+      state.headshotDraft = "";
+      ["profileName", "profileNick", "profileBio"].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("profilePhoto").value = "";
+      showToast("Profile saved. Reputation management not included.");
+      renderAll();
+    }
+
+    function renderRules() {
+      document.getElementById("rulePreview").innerHTML = renderTable(["Placement", "Points"], state.points.placement.map((points, index) => `<tr><td>P${index + 1}</td><td><strong>${points}</strong></td></tr>`).concat([
+        `<tr><td>Fastest lap bonus</td><td><strong>${state.points.fastestLap}</strong></td></tr>`,
+        `<tr><td>Pole bonus</td><td><strong>${state.points.pole}</strong></td></tr>`
+      ]));
+    }
+
+    function simulateRace() {
+      const shuffled = [...state.drivers].sort(() => Math.random() - 0.5).slice(0, Math.min(6, state.drivers.length));
+      const base = 47 + Math.random() * 6;
+      const results = shuffled.map((driver, index) => ({
+        driverId: driver.id,
+        position: index + 1,
+        bestLap: (base + Math.random() * 2 + index * 0.15).toFixed(3),
+        totalTime: `14:${String(20 + index * 3 + Math.floor(Math.random() * 7)).padStart(2, "0")}.${String(Math.floor(Math.random() * 900) + 100)}`
+      }));
+      const race = {
+        id: `r${Date.now()}`,
+        name: `Round ${state.races.length + 1} - Simulated Sprint`,
+        track: state.tracks[Math.floor(Math.random() * state.tracks.length)],
+        date: new Date().toISOString().slice(0, 10),
+        poleDriverId: results[0].driverId,
+        results
+      };
+      state.races.push(race);
+      state.selectedRaceId = race.id;
+      showToast("Synthetic race added. Real-world excuses may vary.");
+      renderAll();
+    }
+
+    function setTab(tabId) {
+      document.querySelectorAll(".view").forEach(view => view.classList.toggle("active", view.id === tabId));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function bindEvents() {
+      document.querySelectorAll("[data-jump]").forEach(button => button.addEventListener("click", () => setTab(button.dataset.jump)));
+      document.getElementById("raceCsv").addEventListener("input", previewImport);
+      document.getElementById("importRace").addEventListener("click", importRace);
+      document.getElementById("saveProfile").addEventListener("click", saveProfile);
+      document.getElementById("simulateRace").addEventListener("click", simulateRace);
+      document.getElementById("csvFile").addEventListener("change", event => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          document.getElementById("raceCsv").value = reader.result;
+          previewImport();
+        };
+        reader.readAsText(file);
+      });
+      document.getElementById("profilePhoto").addEventListener("change", event => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          state.headshotDraft = reader.result;
+          showToast("Headshot loaded locally. Looking aerodynamic.");
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function bindProfileLinks() {
+      document.querySelectorAll("[data-profile-driver]").forEach(button => {
+        button.addEventListener("click", () => {
+          state.selectedDriverId = button.dataset.profileDriver;
+          setTab("drivers");
+          renderAll();
+          requestAnimationFrame(() => {
+            document.getElementById("drivers").scrollIntoView({ block: "start", behavior: "smooth" });
+          });
+        });
+      });
+    }
+
+    function bindRaceLinks() {
+      document.querySelectorAll("[data-summary-race]").forEach(button => {
+        button.addEventListener("click", () => {
+          state.selectedRaceId = button.dataset.summaryRace;
+          setTab("races");
+          renderAll();
+          requestAnimationFrame(() => {
+            document.getElementById("races").scrollIntoView({ block: "start", behavior: "smooth" });
+          });
+        });
+      });
+    }
+
+    function renderAll() {
+      renderStandings();
+      renderRaceArchive();
+      renderDrivers();
+      renderUpload();
+      renderProfiles();
+      renderRules();
+      renderHallOfFame();
+      bindProfileLinks();
+      bindRaceLinks();
+    }
+
+    bindEvents();
+    renderAll();
+  </script>
+</body>
+</html>
